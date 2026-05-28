@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart - Tienda</title>
+    
+    <!-- Aquí conectamos tu logo en la pestaña y tus colores corporativos -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="estilos.css">
+    
+    <style>
+        /* Estilos específicos para la estructura de la tienda y el panel del carrito */
+        .grid-productos { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px; 
+            padding: 30px; 
+        }
+        .img-producto { 
+            max-width: 100%; 
+            height: 150px; 
+            object-fit: contain; 
+            margin-bottom: 15px;
+        }
+        .precio { 
+            font-size: 22px; 
+            color: var(--naranja-nova); /* El naranja de tu logo para los precios */
+            font-weight: bold; 
+            margin: 10px 0; 
+        }
+        
+        /* Panel Lateral del Carrito */
+        #carrito { 
+            display: none; 
+            position: fixed; 
+            right: 0; 
+            top: 0; 
+            width: 320px; 
+            height: 100%; 
+            background: white; 
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1); 
+            padding: 25px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            z-index: 1000; 
+        }
+        .cerrar-carrito { 
+            color: #dc3545; 
+            cursor: pointer; 
+            float: right; 
+            font-weight: bold; 
+            font-size: 18px;
+        }
+        #lista-carrito { list-style: none; padding: 0; }
+        #lista-carrito li { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 15px; 
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 10px; 
+            color: var(--gris-oscuro);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tu Nueva Barra de Navegación Estilo Amazon -->
+    <nav class="navbar">
+        <a href="tienda.html" class="logo-link">
+            <img src="logo.png" alt="NovaCart Logo" class="logo-img" style="height: 55px; width: auto; object-fit: contain;">
+        </a>
+        <div class="nav-links">
+            <span id="saludo-usuario" style="color: var(--gris-oscuro); font-weight: bold;"></span>
+            <a href="cuenta.html" style="text-decoration:none; color:var(--gris-oscuro); font-weight:bold;">Mi Cuenta</a>
+            <a onclick="toggleCarrito()" class="btn-nova" style="margin-left: 10px;">🛒 (<span id="contador-carrito">0</span>)</a>
+            <a onclick="cerrarSesion()" style="text-decoration:none; color: #dc3545; font-weight:bold; cursor: pointer; margin-left: 10px;">Salir</a>
+        </div>
+    </nav>
+
+    <!-- Aquí se inyectan las tarjetas desde Java -->
+    <div id="contenedor-productos" class="grid-productos">
+    </div>
+
+    <!-- Panel Lateral del Carrito -->
+    <div id="carrito">
+        <span class="cerrar-carrito" onclick="toggleCarrito()">✖ Cerrar</span>
+        <h2 style="color: var(--gris-oscuro); margin-top: 0;">Tu Carrito</h2>
+        <ul id="lista-carrito"></ul>
+        <h3 style="color: var(--gris-oscuro);">Total: $<span id="total-venta" style="color: var(--naranja-nova);">0.00</span></h3>
+        <button class="btn-nova" style="width: 100%; margin-top: 20px; font-size: 16px;" onclick="procesarPago()">Proceder al pago</button>
+    </div>
+
+    <script>
+        let carrito = [];
+
+        window.onload = function() {
+            verificarSesion();
+            cargarProductosDesdeServidor();
+        };
+
+        function verificarSesion() {
+            const nombre = localStorage.getItem('usuarioLogueadoNombre');
+            if (nombre) {
+                document.getElementById('saludo-usuario').innerText = `Hola, ${nombre}`;
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.clear(); 
+            window.location.href = 'login.html'; 
+        }
+
+        function cargarProductosDesdeServidor() {
+            fetch('http://localhost:8081/api/productos')
+                .then(response => response.json())
+                .then(productos => {
+                    const grid = document.getElementById('contenedor-productos');
+                    grid.innerHTML = ''; 
+
+                    productos.forEach(p => {
+                        const tarjeta = document.createElement('div');
+                        tarjeta.className = 'producto-card';
+                        
+                        // EL TRUCO ESTÁ AQUÍ: Limpiamos las comillas simples del nombre
+                        const nombreSeguro = p.nombre.replace(/'/g, "\\'");
+                        
+                        let botonHTML = '';
+                        if (p.stock > 0) {
+                            // Usamos nombreSeguro en lugar de p.nombre
+                            botonHTML = `<button class="btn-nova" style="width: 100%;" onclick="agregarAlCarrito(${p.id}, '${nombreSeguro}', ${p.precio})">Agregar al carrito</button>
+                                         <p style="font-size: 12px; color: #777; margin-top: 5px;">${p.stock} disponibles</p>`;
+                        } else {
+                            botonHTML = `<button class="btn-nova" style="width: 100%; background-color: #ccc; cursor: not-allowed;" disabled>Agotado</button>`;
+                        }
+
+                        const imgUrl = p.imagenUrl ? p.imagenUrl : 'https://via.placeholder.com/150?text=NovaCart';
+
+                        tarjeta.innerHTML = `
+                            <img src="${imgUrl}" alt="${p.nombre}" class="img-producto">
+                            <h3 style="color: var(--gris-oscuro); font-size: 18px; margin-bottom: 5px;">${p.nombre}</h3>
+                            <p class="precio">$${p.precio.toFixed(2)}</p>
+                            ${botonHTML}
+                        `;
+                        grid.appendChild(tarjeta);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function agregarAlCarrito(id, nombre, precio) {
+            const itemExistente = carrito.find(item => item.productoId === id);
+            
+            if (itemExistente) {
+                itemExistente.cantidad++; 
+            } else {
+                carrito.push({ productoId: id, nombre: nombre, precio: precio, cantidad: 1 });
+            }
+            
+            actualizarUI();
+            document.getElementById('carrito').style.display = 'block';
+        }
+
+        function actualizarUI() {
+            const lista = document.getElementById('lista-carrito');
+            lista.innerHTML = '';
+            
+            let total = 0;
+            let cantidadArticulos = 0;
+
+            carrito.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+                cantidadArticulos += item.cantidad;
+
+                const li = document.createElement('li');
+                li.innerHTML = `<span><b>${item.cantidad}x</b> ${item.nombre}</span> <span style="font-weight:bold;">$${subtotal.toFixed(2)}</span>`;
+                lista.appendChild(li);
+            });
+
+            document.getElementById('total-venta').innerText = total.toFixed(2);
+            document.getElementById('contador-carrito').innerText = cantidadArticulos;
+        }
+
+        function toggleCarrito() {
+            const panel = document.getElementById('carrito');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function procesarPago() {
+            if (carrito.length === 0) return alert("Tu carrito está vacío.");
+            const usuarioId = localStorage.getItem('usuarioLogueadoId');
+            if (!usuarioId) {
+                alert("Por favor, inicia sesión para continuar.");
+            window.location.href = 'login.html';
+            return;
+            }
+            localStorage.setItem('carritoNovacart', JSON.stringify(carrito));
+            window.location.href = 'checkout.html';
+        }
+
+           
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart - Iniciar Sesión</title>
+    
+    <!-- Conectamos la identidad visual -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="estilos.css">
+    
+    <style>
+        body {
+            background-color: var(--gris-claro);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .separador {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 13px;
+            color: #777;
+            position: relative;
+        }
+        .separador::before, .separador::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 20%;
+            height: 1px;
+            background-color: #ddd;
+        }
+        .separador::before { left: 0; }
+        .separador::after { right: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación Universal (Solo Logo Centrado) -->
+    <nav class="navbar" style="justify-content: center;">
+        <a href="tienda.html" class="logo-link">
+            <img src="logo.png" alt="NovaCart Logo" class="logo-img" style="height: 55px; width: auto; object-fit: contain;">
+        </a>
+    </nav>
+
+    <!-- Usamos la clase de tu estilos.css -->
+    <div class="form-container" style="margin-top: 80px;">
+        <h2 style="text-align: center; color: var(--gris-oscuro); margin-top: 0;">Iniciar sesión</h2>
+
+        <form onsubmit="iniciarSesion(event)">
+            <label style="font-weight: bold; font-size: 14px;">Dirección de e-mail o Usuario</label>
+            <input type="text" id="usuario" required>
+
+            <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
+            <input type="password" id="password" required>
+
+            <button type="submit" class="btn-nova" style="width: 100%; margin-top: 15px; font-size: 16px;">Continuar</button>
+        </form>
+
+        <div class="separador">¿Eres nuevo en NovaCart?</div>
+        
+        <!-- Botón gris corporativo para registro -->
+        <button class="btn-nova" style="width: 100%; margin-top: 20px; background-color: var(--gris-oscuro);" onclick="window.location.href='registro.html'">Crea tu cuenta</button>
+    </div>
+
+    <script>
+        function iniciarSesion(event) {
+            event.preventDefault(); 
+
+            const usuarioInput = document.getElementById('usuario').value;
+            const passwordInput = document.getElementById('password').value;
+
+            const credenciales = {
+                usuario: usuarioInput,
+                password: passwordInput
+            };
+
+            fetch('http://localhost:8081/api/usuarios/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(credenciales)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Credenciales incorrectas');
+                }
+                return response.json(); 
+            })
+            .then(usuario => {
+                localStorage.setItem('usuarioLogueadoId', usuario.id);
+                localStorage.setItem('usuarioLogueadoNombre', usuario.nombre);
+                localStorage.setItem('usuarioLogueadoRol', usuario.rol);
+
+                if (usuario.rol === 'ADMIN') {
+                    window.location.href = 'admin.html'; 
+                } else {
+                    window.location.href = 'tienda.html'; 
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Usuario o contraseña incorrectos. Revisa tus datos e intenta de nuevo.");
+            });
+        }
+    </script>
+</body>
+</html>

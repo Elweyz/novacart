@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart - Mi Cuenta</title>
+    
+    <!-- Conectamos la identidad visual -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="estilos.css">
+    
+    <style>
+        body { background-color: var(--gris-claro); margin: 0; }
+        
+        .contenedor-principal { display: flex; max-width: 1200px; margin: 40px auto; padding: 0 20px; gap: 30px; }
+        
+        /* Panel Lateral */
+        .sidebar-cuenta { width: 250px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 10px 0; height: fit-content; border: 1px solid #eee; }
+        .sidebar-cuenta div { padding: 15px 20px; cursor: pointer; color: var(--gris-oscuro); transition: 0.2s; font-weight: 500; }
+        .sidebar-cuenta div:hover { background-color: var(--gris-claro); }
+        .sidebar-cuenta .activo { border-left: 4px solid var(--naranja-nova); font-weight: bold; background-color: #fffaf5; color: var(--naranja-nova); }
+        
+        /* Contenido Derecho */
+        .contenido-cuenta { flex: 1; background: white; padding: 35px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        h2 { margin-top: 0; color: var(--gris-oscuro); border-bottom: 2px solid var(--gris-claro); padding-bottom: 15px; }
+        
+        /* Tablas y Cajas */
+        .tabla-pedidos { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tabla-pedidos th { background-color: var(--gris-claro); color: var(--gris-oscuro); text-align: left; padding: 15px; font-weight: bold; border-radius: 5px 5px 0 0; }
+        .tabla-pedidos td { padding: 15px; border-bottom: 1px solid #eee; color: #555; }
+        .caja-info { background-color: #fafafa; border: 1px solid #eee; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
+        
+        .btn-gris { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background: #ccc; color: #333; transition: 0.2s;}
+        .btn-gris:hover { background: #bbb; }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación Universal -->
+    <nav class="navbar">
+        <a href="tienda.html" class="logo-link">
+            <img src="logo.png" alt="NovaCart Logo" class="logo-img" style="height: 55px; width: auto; object-fit: contain;">
+        </a>
+        <div class="nav-links">
+            <a href="tienda.html" style="text-decoration:none; color:var(--gris-oscuro); font-weight:bold;">Ir a la tienda</a>
+            <a onclick="cerrarSesion()" style="text-decoration:none; color: #dc3545; font-weight:bold; cursor: pointer; margin-left: 15px;">Salir</a>
+        </div>
+    </nav>
+
+    <div class="contenedor-principal">
+        <div class="sidebar-cuenta">
+            <div id="btn-perfil" onclick="cambiarPestana('perfil')">👤 Mi Perfil</div>
+            <div id="btn-direcciones" onclick="cambiarPestana('direcciones')">📍 Mis Direcciones</div>
+            <div id="btn-historial" class="activo" onclick="cambiarPestana('historial')">📦 Historial de Pedidos</div>
+            <div onclick="cerrarSesion()" style="color: #dc3545; border-top: 1px solid #eee; margin-top: 10px;">🚪 Cerrar Sesión</div>
+        </div>
+
+        <div class="contenido-cuenta">
+            <div id="seccion-perfil" style="display: none;">
+                <h2>Mi Perfil</h2>
+                <div class="caja-info">
+                    <p style="margin-bottom: 15px;"><strong>Nombre:</strong> <span id="perfil-nombre" style="color: var(--naranja-nova); font-size: 18px;">...</span></p>
+                    <p style="margin-bottom: 15px;"><strong>Correo:</strong> <span id="perfil-correo">...</span></p>
+                    <p><strong>Rol:</strong> <span id="perfil-rol" style="background: var(--gris-oscuro); color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">...</span></p>
+                </div>
+            </div>
+
+            <div id="seccion-direcciones" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="border: none; margin: 0;">Mis Direcciones</h2>
+                    <button class="btn-nova" onclick="document.getElementById('form-dir').style.display='block'">+ Nueva Dirección</button>
+                </div>
+
+                <div id="form-dir" style="display: none;" class="caja-info">
+                    <h3 style="margin-top: 0; color: var(--gris-oscuro);">Agregar Nueva Dirección</h3>
+                    <input type="text" id="dir-calle" placeholder="Calle y número">
+                    <input type="text" id="dir-colonia" placeholder="Colonia">
+                    <input type="text" id="dir-ciudad" placeholder="Ciudad">
+                    <input type="text" id="dir-cp" placeholder="Código Postal">
+                    <textarea id="dir-ref" placeholder="Referencias (Ej. Entre calle X y Y)"></textarea>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn-nova" onclick="guardarDireccion()">Guardar Dirección</button>
+                        <button class="btn-gris" onclick="document.getElementById('form-dir').style.display='none'">Cancelar</button>
+                    </div>
+                </div>
+
+                <div id="lista-direcciones">
+                </div>
+            </div>
+
+            <div id="seccion-historial">
+                <h2>Historial de Pedidos</h2>
+                <table class="tabla-pedidos">
+                    <thead>
+                        <tr><th># Pedido</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Detalle</th></tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-pedidos"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            cargarHistorialPedidos();
+            cargarDatosPerfil();
+        };
+
+        function cambiarPestana(pestana) {
+            ['perfil', 'direcciones', 'historial'].forEach(p => {
+                document.getElementById('seccion-' + p).style.display = 'none';
+                document.getElementById('btn-' + p).classList.remove('activo');
+            });
+            document.getElementById('seccion-' + pestana).style.display = 'block';
+            document.getElementById('btn-' + pestana).classList.add('activo');
+            if(pestana === 'direcciones') cargarDirecciones();
+        }
+
+        function cargarDatosPerfil() {
+            const id = localStorage.getItem('usuarioLogueadoId');
+            fetch(`http://localhost:8081/api/usuarios/${id}`)
+                .then(res => res.json())
+                .then(u => {
+                    document.getElementById('perfil-nombre').innerText = u.nombre;
+                    document.getElementById('perfil-correo').innerText = u.usuario;
+                    document.getElementById('perfil-rol').innerText = u.rol;
+                });
+        }
+
+        function cargarDirecciones() {
+            const id = localStorage.getItem('usuarioLogueadoId');
+            fetch(`http://localhost:8081/api/direcciones/usuario/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const cont = document.getElementById('lista-direcciones');
+                    cont.innerHTML = data.length ? '' : '<p>No tienes direcciones registradas.</p>';
+                    data.forEach(d => {
+                        cont.innerHTML += `<div class="caja-info" style="border-left: 4px solid var(--naranja-nova);">
+                            <strong style="font-size: 16px; color: var(--gris-oscuro);">${d.calle}</strong><br>
+                            <span style="color: #666;">${d.colonia}, ${d.ciudad}. CP: ${d.codigoPostal}</span><br>
+                            <small style="color: #888; display: block; margin-top: 5px;">Ref: ${d.referencias}</small></div>`;
+                    });
+                });
+        }
+
+        function guardarDireccion() {
+            const idUsuario = localStorage.getItem('usuarioLogueadoId');
+            
+            const calle = document.getElementById('dir-calle').value;
+            const colonia = document.getElementById('dir-colonia').value;
+            const ciudad = document.getElementById('dir-ciudad').value;
+            const cp = document.getElementById('dir-cp').value;
+            const ref = document.getElementById('dir-ref').value;
+
+            if(!calle || !colonia) {
+                alert("Por favor llena al menos la calle y la colonia.");
+                return;
+            }
+
+            const nuevaDir = {
+                usuarioId: parseInt(idUsuario),
+                calle: calle,
+                colonia: colonia,
+                ciudad: ciudad,
+                codigoPostal: cp,
+                referencias: ref
+            };
+
+            fetch('http://localhost:8081/api/direcciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevaDir)
+            })
+            .then(response => {
+                if(response.ok) {
+                    alert("✅ Dirección guardada correctamente");
+                    document.getElementById('form-dir').style.display = 'none';
+                    document.getElementById('dir-calle').value = '';
+                    document.getElementById('dir-colonia').value = '';
+                    cargarDirecciones();
+                } else {
+                    alert("❌ Error al guardar. Revisa que el servidor esté prendido.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("No se pudo conectar con el servidor Java.");
+            });
+        }
+
+        function cargarHistorialPedidos() {
+    const id = localStorage.getItem('usuarioLogueadoId');
+    fetch(`http://localhost:8081/api/cuenta/pedidos/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            const tb = document.getElementById('cuerpo-tabla-pedidos');
+            tb.innerHTML = '';
+            
+            if(data.length === 0) {
+                tb.innerHTML = '<tr><td colspan="5" style="text-align:center;">Aún no tienes pedidos.</td></tr>';
+                return;
+            }
+
+            data.forEach(p => {
+                // Fila del pedido
+                tb.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold;">#${p.id}</td>
+                        <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                        <td style="color: var(--naranja-nova); font-weight:bold;">$${p.total.toFixed(2)}</td>
+                        <td><span style="background: #e6f4ea; color: #1e8e3e; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight:bold;">${p.estadoEnvio}</span></td>
+                        <td><button onclick="toggleDetalle(${p.id})" style="background:var(--naranja-nova); color:white; border:none; padding: 5px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">Ver detalle</button></td>
+                    </tr>
+                    <tr id="detalle-${p.id}" style="display:none;">
+                        <td colspan="5" style="padding: 0;">
+                            <div id="contenido-detalle-${p.id}" style="background:#fffaf5; padding:15px; border-left: 4px solid var(--naranja-nova);">
+                                Cargando...
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        });
+}
+
+function toggleDetalle(pedidoId) {
+    const fila = document.getElementById(`detalle-${pedidoId}`);
+    const contenido = document.getElementById(`contenido-detalle-${pedidoId}`);
+
+    if (fila.style.display === 'none') {
+        fila.style.display = 'table-row';
+        fetch(`http://localhost:8081/api/detalle-pedido/${pedidoId}`)
+            .then(r => r.json())
+            .then(items => {
+                if (!items.length) {
+                    contenido.innerHTML = '<p style="color:#888;">Sin productos registrados.</p>';
+                    return;
+                }
+                contenido.innerHTML = items.map(item => `
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #eee;">
+                        <img src="${item.imagenUrl || 'https://via.placeholder.com/45'}" style="width:45px;height:45px;object-fit:contain;background:#f5f5f5;border-radius:6px;padding:4px;" onerror="this.src='https://via.placeholder.com/45'">
+                        <div style="flex:1;">
+                            <strong style="color:var(--gris-oscuro);">${item.nombre}</strong>
+                            <p style="color:#888; font-size:13px; margin:2px 0;">Cantidad: ${item.cantidad}</p>
+                        </div>
+                        <span style="font-weight:bold; color:var(--naranja-nova);">$${(item.precioUnitario * item.cantidad).toFixed(2)}</span>
+                    </div>`).join('');
+            });
+    } else {
+        fila.style.display = 'none';
+    }
+}
+
+        function cerrarSesion() { localStorage.clear(); window.location.href = 'login.html'; }
+    </script>
+</body>
+</html>

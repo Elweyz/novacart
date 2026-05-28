@@ -1,0 +1,82 @@
+/* Variables de Marca NovaCart */
+:root {
+    --naranja-nova: #FF7900;
+    --gris-oscuro: #44474A;
+    --gris-claro: #F4F4F4;
+    --blanco: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--gris-claro);
+    margin: 0;
+    color: var(--gris-oscuro);
+}
+
+/* Barra de Navegación */
+.navbar {
+    background-color: var(--blanco);
+    border-bottom: 4px solid var(--naranja-nova);
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar h1 {
+    color: var(--naranja-nova);
+    margin: 0;
+    font-size: 24px;
+}
+
+/* Botones con estilo Nova */
+.btn-nova {
+    background-color: var(--naranja-nova);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-nova:hover {
+    background-color: var(--gris-oscuro);
+    transform: scale(1.05);
+}
+
+/* Tarjetas de Producto para tienda.html */
+.producto-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+
+.producto-card:hover {
+    border-color: var(--naranja-nova);
+    box-shadow: 0 5px 15px rgba(255,121,0,0.2);
+}
+
+/* Formularios para Login y Registro */
+.form-container {
+    background: white;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}

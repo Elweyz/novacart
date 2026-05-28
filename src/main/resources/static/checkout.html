@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - NovaCart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #FF6B00;
+            --orange-dark: #e05e00;
+            --gray-dark: #414549;
+            --gray-mid: #6b7280;
+            --white: #ffffff;
+            --bg: #F5F5F5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Barlow', sans-serif; background: var(--bg); }
+ 
+        header {
+            background: linear-gradient(135deg, var(--gray-dark) 0%, #2a2d30 100%);
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+ 
+        .header-logo {
+            display: flex; align-items: center; gap: 10px; text-decoration: none;
+        }
+        .header-logo img { height: 36px; filter: brightness(0) invert(1); }
+        .logo-text {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+        }
+        .logo-text span:first-child { color: var(--orange); }
+        .logo-text span:last-child { color: var(--white); }
+ 
+        .header-back {
+            color: rgba(255,255,255,0.8); text-decoration: none;
+            font-size: 14px; font-weight: 600;
+            padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px; transition: all 0.2s;
+        }
+        .header-back:hover { background: rgba(255,255,255,0.1); color: white; }
+ 
+        .main {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+        }
+ 
+        .card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+ 
+        .card-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 20px; font-weight: 700;
+            color: var(--gray-dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex; align-items: center; gap: 8px;
+        }
+ 
+        /* DIRECCIONES */
+        .dir-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+ 
+        .dir-option:hover { border-color: var(--orange); background: #fff7f3; }
+        .dir-option.seleccionada { border-color: var(--orange); background: #fff7f3; }
+ 
+        .dir-radio {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+ 
+        .dir-option.seleccionada .dir-radio {
+            border-color: var(--orange);
+            background: var(--orange);
+        }
+ 
+        .dir-option.seleccionada .dir-radio::after {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: white;
+        }
+ 
+        .dir-info strong {
+            display: block;
+            font-size: 14px;
+            color: var(--gray-dark);
+            margin-bottom: 3px;
+        }
+ 
+        .dir-info p { font-size: 13px; color: var(--gray-mid); line-height: 1.5; }
+ 
+        .btn-nueva-dir {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            color: var(--gray-mid);
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            margin-top: 5px;
+        }
+        .btn-nueva-dir:hover { border-color: var(--orange); color: var(--orange); }
+ 
+        /* FORM NUEVA DIRECCION */
+        .form-nueva-dir {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+ 
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group.full { grid-column: 1 / -1; }
+ 
+        label {
+            font-size: 11px; font-weight: 700;
+            color: var(--gray-mid); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+ 
+        input, textarea {
+            padding: 10px 13px;
+            border: 2px solid #e5e7eb; border-radius: 8px;
+            font-family: 'Barlow', sans-serif; font-size: 14px;
+            color: var(--gray-dark); transition: all 0.2s;
+        }
+ 
+        input:focus, textarea:focus {
+            outline: none; border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
+        }
+ 
+        .form-actions { display: flex; gap: 10px; margin-top: 12px; }
+ 
+        .btn-guardar-dir {
+            background: var(--orange); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px;
+            font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-guardar-dir:hover { background: var(--orange-dark); }
+ 
+        .btn-cancelar-dir {
+            background: #e5e7eb; color: var(--gray-mid); border: none;
+            padding: 10px 20px; border-radius: 8px;
+            font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 600;
+            cursor: pointer;
+        }
+ 
+        /* RESUMEN */
+        .resumen-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+        }
+ 
+        .resumen-item:last-child { border-bottom: none; }
+ 
+        .resumen-img {
+            width: 45px; height: 45px;
+            object-fit: contain;
+            background: #f8f8f8;
+            border-radius: 8px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+ 
+        .resumen-nombre {
+            flex: 1;
+            font-size: 14px;
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+ 
+        .resumen-cantidad {
+            font-size: 12px;
+            color: var(--gray-mid);
+            margin-top: 2px;
+        }
+ 
+        .resumen-precio {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-dark);
+            font-family: 'Barlow Condensed', sans-serif;
+        }
+ 
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-top: 2px solid #f0f0f0;
+            margin-top: 5px;
+        }
+ 
+        .total-label { font-size: 15px; font-weight: 600; color: var(--gray-mid); }
+ 
+        .total-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 28px; font-weight: 800; color: var(--orange);
+        }
+ 
+        .btn-pagar {
+            width: 100%;
+            padding: 16px;
+            background: var(--orange); color: white; border: none;
+            border-radius: 12px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 17px; font-weight: 800;
+            cursor: pointer; transition: all 0.2s;
+            margin-top: 15px;
+            letter-spacing: 0.5px;
+        }
+ 
+        .btn-pagar:hover {
+            background: var(--orange-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(255,107,0,0.35);
+        }
+ 
+        .btn-pagar:disabled {
+            background: #d1d5db; color: #9ca3af; cursor: not-allowed;
+            transform: none; box-shadow: none;
+        }
+ 
+        .seguridad {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; margin-top: 12px;
+            font-size: 12px; color: var(--gray-mid);
+        }
+ 
+        /* MODAL ÉXITO */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 500;
+            align-items: center; justify-content: center;
+        }
+ 
+        .modal-overlay.activo { display: flex; }
+ 
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            animation: popIn 0.4s ease;
+        }
+ 
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+ 
+        .modal-icon {
+            width: 80px; height: 80px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+        }
+ 
+        .modal h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 26px; font-weight: 800;
+            color: var(--gray-dark); margin-bottom: 10px;
+        }
+ 
+        .modal p { color: var(--gray-mid); font-size: 15px; line-height: 1.6; margin-bottom: 25px; }
+ 
+        .modal-pedido-num {
+            background: #fff7f3;
+            border: 2px solid var(--orange);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 20px; font-weight: 700;
+            color: var(--orange);
+            margin-bottom: 25px;
+        }
+ 
+        .btn-modal {
+            background: var(--orange); color: white; border: none;
+            padding: 13px 30px; border-radius: 10px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-modal:hover { background: var(--orange-dark); }
+ 
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-mid);
+        }
+        .empty-state p { font-size: 15px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="header-logo" href="tienda.html">
+            <img src="logo.png" alt="NovaCart" onerror="this.style.display='none'">
+            <div class="logo-text"><span>Nova</span><span>Cart</span></div>
+        </a>
+        <a href="tienda.html" class="header-back">← Volver a la tienda</a>
+    </header>
+ 
+    <div class="main">
+        <!-- COLUMNA IZQUIERDA -->
+        <div>
+            <!-- DIRECCIONES -->
+            <div class="card">
+                <h2 class="card-title">📍 Dirección de entrega</h2>
+                <div id="lista-direcciones"></div>
+                <button class="btn-nueva-dir" onclick="toggleFormDir()">+ Agregar nueva dirección</button>
+                <div id="form-nueva-dir" class="form-nueva-dir">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Calle y número</label>
+                            <input type="text" id="dir-calle" placeholder="Ej. Av. Principal 123">
+                        </div>
+                        <div class="form-group">
+                            <label>Colonia</label>
+                            <input type="text" id="dir-colonia" placeholder="Ej. Centro">
+                        </div>
+                        <div class="form-group">
+                            <label>Ciudad</label>
+                            <input type="text" id="dir-ciudad" placeholder="Ej. Monterrey">
+                        </div>
+                        <div class="form-group">
+                            <label>Código Postal</label>
+                            <input type="text" id="dir-cp" placeholder="Ej. 64000">
+                        </div>
+                        <div class="form-group full">
+                            <label>Referencias</label>
+                            <input type="text" id="dir-ref" placeholder="Ej. Entre calle X y calle Y">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-guardar-dir" onclick="guardarDireccion()">Guardar y seleccionar</button>
+                        <button class="btn-cancelar-dir" onclick="toggleFormDir()">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- COLUMNA DERECHA: RESUMEN -->
+        <div>
+            <div class="card">
+                <h2 class="card-title">🛒 Resumen del pedido</h2>
+                <div id="resumen-items"></div>
+                <div class="total-row">
+                    <span class="total-label">Total a pagar</span>
+                    <span class="total-amount">$<span id="total-checkout">0.00</span></span>
+                </div>
+                <button class="btn-pagar" id="btn-pagar" onclick="procesarPago()" disabled>
+                    Confirmar y pagar →
+                </button>
+                <div class="seguridad">🔒 Pago seguro y protegido</div>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- MODAL ÉXITO -->
+    <div class="modal-overlay" id="modal-exito">
+        <div class="modal">
+            <div class="modal-icon">✅</div>
+            <h2>¡Pedido confirmado!</h2>
+            <p>Tu pedido ha sido procesado exitosamente. Pronto recibirás tu producto.</p>
+            <div class="modal-pedido-num" id="modal-pedido-num">Pedido #...</div>
+            <button class="btn-modal" onclick="window.location.href='tienda.html'">Seguir comprando</button>
+        </div>
+    </div>
+ 
+    <script>
+        let carrito = [];
+        let direccionSeleccionadaId = null;
+        const usuarioId = localStorage.getItem('usuarioLogueadoId');
+ 
+        window.onload = function() {
+            if (!usuarioId) { window.location.href = 'login.html'; return; }
+            carrito = JSON.parse(localStorage.getItem('carritoNovacart') || '[]');
+            if (!carrito.length) {
+                document.querySelector('.main').innerHTML = `
+                    <div class="card" style="grid-column: 1/-1; text-align:center; padding: 60px;">
+                        <p style="font-size:18px; color: var(--gray-mid); margin-bottom:20px;">Tu carrito está vacío.</p>
+                        <a href="tienda.html" style="color: var(--orange); font-weight:700; text-decoration:none;">← Volver a la tienda</a>
+                    </div>`;
+                return;
+            }
+            renderResumen();
+            cargarDirecciones();
+        };
+ 
+        function renderResumen() {
+            const cont = document.getElementById('resumen-items');
+            let total = 0;
+            cont.innerHTML = '';
+            carrito.forEach(item => {
+                const sub = item.precio * item.cantidad;
+                total += sub;
+                cont.innerHTML += `
+                    <div class="resumen-item">
+                        <img src="${item.imagenUrl || 'https://via.placeholder.com/45'}" class="resumen-img" onerror="this.src='https://via.placeholder.com/45'">
+                        <div style="flex:1">
+                            <div class="resumen-nombre">${item.nombre}</div>
+                            <div class="resumen-cantidad">${item.cantidad}x · $${item.precio.toFixed(2)} c/u</div>
+                        </div>
+                        <div class="resumen-precio">$${sub.toFixed(2)}</div>
+                    </div>`;
+            });
+            document.getElementById('total-checkout').innerText = total.toFixed(2);
+        }
+ 
+        function cargarDirecciones() {
+            fetch(`http://localhost:8081/api/direcciones/usuario/${usuarioId}`)
+                .then(r => r.json())
+                .then(dirs => {
+                    const cont = document.getElementById('lista-direcciones');
+                    if (!dirs.length) {
+                        cont.innerHTML = '<p style="color:var(--gray-mid); font-size:14px; margin-bottom:12px;">No tienes direcciones guardadas. Agrega una.</p>';
+                        return;
+                    }
+                    cont.innerHTML = '';
+                    dirs.forEach((d, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'dir-option' + (i === 0 ? ' seleccionada' : '');
+                        div.dataset.id = d.id;
+                        div.innerHTML = `
+                            <div class="dir-radio"></div>
+                            <div class="dir-info">
+                                <strong>${d.calle}</strong>
+                                <p>${d.colonia}, ${d.ciudad}. CP: ${d.codigoPostal}<br>
+                                <small>Ref: ${d.referencias || 'Sin referencias'}</small></p>
+                            </div>`;
+                        div.onclick = () => seleccionarDir(div, d.id);
+                        cont.appendChild(div);
+                        if (i === 0) direccionSeleccionadaId = d.id;
+                    });
+                    actualizarBotonPagar();
+                });
+        }
+ 
+        function seleccionarDir(el, id) {
+            document.querySelectorAll('.dir-option').forEach(d => d.classList.remove('seleccionada'));
+            el.classList.add('seleccionada');
+            direccionSeleccionadaId = id;
+            actualizarBotonPagar();
+        }
+ 
+        function actualizarBotonPagar() {
+            document.getElementById('btn-pagar').disabled = !direccionSeleccionadaId;
+        }
+ 
+        function toggleFormDir() {
+            const form = document.getElementById('form-nueva-dir');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        }
+ 
+        function guardarDireccion() {
+            const nueva = {
+                usuarioId: parseInt(usuarioId),
+                calle: document.getElementById('dir-calle').value,
+                colonia: document.getElementById('dir-colonia').value,
+                ciudad: document.getElementById('dir-ciudad').value,
+                codigoPostal: document.getElementById('dir-cp').value,
+                referencias: document.getElementById('dir-ref').value
+            };
+            if (!nueva.calle || !nueva.colonia) return alert("Llena al menos calle y colonia.");
+            fetch('http://localhost:8081/api/direcciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nueva)
+            })
+            .then(r => r.json())
+            .then(() => { toggleFormDir(); cargarDirecciones(); })
+            .catch(() => alert("Error al guardar la dirección."));
+        }
+ 
+        function procesarPago() {
+            if (!direccionSeleccionadaId) return alert("Selecciona una dirección de entrega.");
+            const items = carrito.map(i => ({ productoId: i.productoId, cantidad: i.cantidad }));
+            fetch(`http://localhost:8081/api/checkout/procesar/${usuarioId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(items)
+            })
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+            .then(msg => {
+                const match = msg.match(/#(\d+)/);
+                const numPedido = match ? match[1] : '?';
+                document.getElementById('modal-pedido-num').innerText = `Pedido #${numPedido}`;
+                document.getElementById('modal-exito').classList.add('activo');
+                localStorage.removeItem('carritoNovacart');
+            })
+            .catch(() => alert("Error al procesar el pago. Verifica el stock."));
+        }
+    </script>
+</body>
+</html>

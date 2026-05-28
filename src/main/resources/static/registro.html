@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaCart - Crear Cuenta</title>
+    
+    <!-- Conectamos la identidad visual -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="estilos.css">
+    
+    <style>
+        body {
+            background-color: var(--gris-claro);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .link-login {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--naranja-nova);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        
+        .link-login:hover {
+            color: var(--gris-oscuro);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegación Universal (Solo Logo Centrado) -->
+    <nav class="navbar" style="justify-content: center;">
+        <a href="tienda.html" class="logo-link">
+            <img src="logo.png" alt="NovaCart Logo" class="logo-img" style="height: 55px; width: auto; object-fit: contain;">
+        </a>
+    </nav>
+
+    <!-- Usamos la clase form-container de estilos.css -->
+    <div class="form-container" style="margin-top: 60px;">
+        <h2 style="text-align: center; color: var(--gris-oscuro); margin-top: 0;">Crear una cuenta</h2>
+
+        <form onsubmit="registrarCuenta(event)">
+            <label style="font-weight: bold; font-size: 14px;">Tu nombre completo</label>
+            <input type="text" id="reg-nombre" placeholder="Ej. Juan Pérez" required>
+
+            <label style="font-weight: bold; font-size: 14px;">Correo electrónico</label>
+            <input type="email" id="reg-usuario" placeholder="juan@correo.com" required>
+
+            <label style="font-weight: bold; font-size: 14px;">Contraseña</label>
+            <input type="password" id="reg-password" placeholder="Al menos 6 caracteres" required minlength="6">
+
+            <button type="submit" class="btn-nova" style="width: 100%; margin-top: 15px; font-size: 16px;">Crear tu cuenta</button>
+        </form>
+
+        <a href="login.html" class="link-login">¿Ya tienes una cuenta? Iniciar sesión</a>
+    </div>
+
+    <script>
+        function registrarCuenta(event) {
+            event.preventDefault(); 
+
+            const nombreInput = document.getElementById('reg-nombre').value;
+            const usuarioInput = document.getElementById('reg-usuario').value;
+            const passwordInput = document.getElementById('reg-password').value;
+
+            // Empaquetamos los datos del nuevo usuario
+            const nuevoUsuario = {
+                nombre: nombreInput,
+                usuario: usuarioInput,
+                password: passwordInput
+            };
+
+            fetch('http://localhost:8081/api/usuarios/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoUsuario)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.text();
+            })
+            .then(mensaje => {
+                alert("¡Bienvenido! " + mensaje + " Ahora puedes iniciar sesión.");
+                window.location.href = 'login.html';
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+        }
+    </script>
+</body>
+</html>
